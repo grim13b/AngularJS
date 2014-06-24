@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ja">
+<head>
+	<meta charset="UTF-8">
+	<title>Report Appli</title>
+</head>
+<body ng-app="App">
+	<header>
+		<div>
+			<ul>
+				<li><a href="#/">Report List</a></li>
+				<li><a href="#/new">Create Report</a></li>
+			</ul>
+		</div>
+	</header>
+	<div ng-view></div>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.0-rc.3/angular.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.0-rc.3/angular-route.min.js"></script>
+	<script type="text/javascript" src="app.js"></script>
+
+	<script type="text/ng-template" id="index-tmpl">
+		<h1>Report List</h1>
+		<ul ng-show="list">
+			<li ng-repeat="sheet in list">
+			#{{ sheet.id }} {{ sheet.createdAt | date:'yyyy/MM/dd HH:mm'}}
+			<a ng-href="#/sheet/{{ sheet.id }}">Show Description</a>
+			</li>
+		</ul>
+		<div ng-hide="list">
+			Report NOT found <a href="#/new">Create Report</a>
+		</div>
+	</script>
+
+	<script type="text/ng-template" id="new-tmpl">
+		<h1>New Report</h1>
+		<form novalidate name="sheetForm" ng-submit="save()">
+			<table>
+				<thead>
+					<tr>
+						<th>Product</th><th>Rot</th><th>Number</th><th>Total</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-repeat="orderLine in lines">
+						<td><input type="text" ng-model="orderLine.productName" required></td>
+						<td><input type="number" ng-model="orderLine.unitPrice" required min="0" ng-pattern="integer"></td>
+						<td><input type="number" ng-model="orderLine.count" required min="0" ng-pattern="integer"></td>
+						<td>{{ getSubtotal(orderLine) | number}}</td>
+						<td><button type="button" ng-disabled="disabledDelBtn" ng-click="removeLine(orderLine)">Delete</button></td>
+					</tr>
+				</tbody>
+				<tfoot>
+					<tr>
+						<td colspan="3">Total : </td>
+						<td colspan="2">{{ getTotalAmount(lines) | number }}</td>
+					</tr>
+				</tfoot>
+			</table>
+			<div ng-show="sheetForm.$invalid">
+				<span ng-show="sheetForm.$error.required">Please Fill out a form completely.</span>
+				<span ng-show="sheetForm.$error.min">Please enter a number greater than 0</span>
+				<span ng-show="sheetForm.$error.pattern">Please enter an integer</span> 
+			</div>
+			<div>
+				<button type="button" ng-click="addLine()">Add new report</button>
+				<button type="button" ng-click="initialize()">Clear</button>
+				<button type="submit" ng-disabled="sheetForm.$invalid">Save</button>
+			</div>
+		</form>
+	</script>
+	
+	<script type="text/ng-template" id="sheet-tmpl">
+		<div ng-show="id">
+			<h1>Report #{{ id }}</h1>
+			<p>Date: {{ createdAt | date:'yyyy/MM/dd HH:mm' }}</p>
+			<table>
+				<thead>
+					<tr>
+						<th>Product</th>
+						<th>UnitPrice</th>
+						<th>Count</th>
+						<th>Total</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr ng-repeat="orderLine in lines">
+						<td>{{ orderLine.productName }}</td>
+						<td>{{ orderLine.unitPrice | number }}</td>
+						<td>{{ orderLine.count | number }}</td>
+						<td>{{ getSubtotal(orderLine) | number }}</td>
+					</tr>
+				</tbody>
+				<tfoot>
+					<tr>
+						<td colspan="3">Total : </td>
+						<td>{{ getTotalAmount(lines) | number }}</td>
+					</tr>
+				</tfoot>
+			</table>
+		</div>
+		<div ng-hide="id">
+			Report NOT found <a href="#/new">Create Report</a>
+		</div>
+	</script>
+
+</body>
+</html>
